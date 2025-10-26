@@ -1,5 +1,6 @@
 from graphingAlgo import GraphExercises
 
+
 class Task2:
     def __init__(self, edges=None, graph=None):
         if graph is not None:
