@@ -1,6 +1,5 @@
 from graphingAlgo import GraphExercises
 
-
 class Task3:
     # make weighted graph
     def __init__(self, w_edges=None, graph=None):
