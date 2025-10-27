@@ -1,6 +1,8 @@
-from graphingAlgo import GraphExercises
+
 
 class Task2:
+    # build a directed graph by passing either graph as a ready made dict
+    # or edges which is a list of directed edges
     def __init__(self, edges=None, graph=None):
         if graph is not None:
             self.g = graph
@@ -10,7 +12,7 @@ class Task2:
                 self.g.setdefault(u, set()).add(v)
                 self.g.setdefault(v, set())  # ensure node exists
 
-#--- Kosaraju helpers ---
+    # returns the reversed graph, for every u -> v, create v -> u
     def _rev(self, g):
         r = {u: set() for u in g}
         for u in g:
@@ -18,6 +20,7 @@ class Task2:
                 r.setdefault(v, set()).add(u)
         return r
 
+    # implement Kosaraju, do DFS and push each node onto order after exploring its neighbors
     def _finish_order(self, g):
         vis, order = set(), []
 
@@ -26,18 +29,21 @@ class Task2:
             for v in g[u]:
                 if v not in vis:
                     go(v)
-            order.append(u)           # push after exploring
+            order.append(u) # push after exploring
 
         for u in g:
             if u not in vis:
                 go(u)
         return order
 
-# --- strongly connected components (a) ---
+    """ A) strongly connected components """
     def scc(self):
+        # use Kosaraju, get nodes in decreasing finish time from graph
+        # DFS on the reversed graph in that order to collect SCC's
+        # returns comps - list[set] of SCC's and comp_id - dict node -> SCC indexx
         g = self.g
-        order = self._finish_order(g)  # fix name
-        rg = self._rev(g)
+        order = self._finish_order(g)  # finish order on graph
+        rg = self._rev(g) # reversed graph
         vis = set()
         comp_id = {}
         comps = []
@@ -62,7 +68,7 @@ class Task2:
                         st.append(y)
         return comps, comp_id
 
-# --- meta-graph over scc ids (b) ---
+    """ B) meta-graph over strongly connected components """
     def meta_graph(self, comp_id, k):
         m = {i: set() for i in range(k)}
         for u in self.g:
@@ -73,49 +79,59 @@ class Task2:
                     m[cu].add(cv)
         return m
 
-# --- topological order of the metta-graph (c) ---
+        """ c) topological order via DFS """
     def topo(self, dag):
-        indeg = {u: 0 for u in dag}  # Kahn's Algorithm
-        for u in dag:
-            for v in dag[u]:
-                indeg[v] += 1
-        q = [u for u in dag if indeg[u] == 0]
+
+        vis = set()
         out = []
-        while q:
-            u = q.pop(0)
-            out.append(u)
-            for v in list(dag[u]):
-                indeg[v] -= 1
-                if indeg[v] == 0:
-                    q.append(v)
+
+        def go(u):
+            vis.add(u)
+            # Optional: use sorted(dag[u]) for deterministic output
+            for v in dag[u]:
+                if v not in vis:
+                    go(v)
+            out.append(u)  # post-order push
+
+        # Optional: iterate in sorted(dag) for deterministic order
+        for u in dag:
+            if u not in vis:
+                go(u)
+
+        out.reverse()
         return out
 
-# ---
-if __name__ == "__main__":
+def run():
     edges = [
-        ('1','2'), ('2','3'), ('3','1'),        # SCC (1,2,3)
-        ('3','4'),                              # 3→4 bridge
-        ('4','5'), ('5','4'),                   # SCC (4,5)
-        ('5','6'),                              # bridge
-        ('6','7'), ('7','8'), ('8','9'),
-        ('9','6'),                              # SCC (6,7,8,9)
-        ('9','10'), ('10','11'), ('11','12'),
-        ('12','10')                             # SCC (10,11,12)
+        # Left cluster
+        (4, 1), (4, 12), (4, 2), (1, 3), (2, 1), (3, 2),
+        # Middle & top connections
+        (3, 5),
+        # Middle-right cluster
+        (9, 5), (5, 8), (5, 6), (6, 8), (8, 9), (8, 10), (6, 7),
+        (10, 9), (10, 11),
+        # Lower-left to middle
+        (9, 11), (11, 12),
     ]
-
     t2 = Task2(edges=edges)
-
+    """ A) SCC's """
     print("Strongly Connected Components:")
     comps, cid = t2.scc()
     for i, S in enumerate(comps):
         print(f"SCC {i} ->", sorted(S))
 
-    print("\nMeta Graph (SCC connections):")
+    """ B) show Meta Graph """
+    print("\nMeta Graph:")
     M = t2.meta_graph(cid, len(comps))
     for i in sorted(M):
         for j in sorted(M[i]):
             print(f"{i} -> {j}")
 
+    """ C) Topological Order """
     print("\nTopological Order:")
     print(t2.topo(M))
+
+    if __name__ == "__main__":
+        run()
+
 

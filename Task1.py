@@ -133,21 +133,22 @@ edges = [
 g = Task1(edges=edges).g
 
 
-if __name__ == "__main__":
-    # (a) Can DFS and BFS find all connected components? -> Print both sets of components
+# ... (all your Task1 code unchanged above) ...
+g = Task1(edges=edges).g
+
+def run():
+    # (a)
     print("DFS components:", components_dfs(g))
     print("BFS components:", components_bfs(g))
-
-    # (b) Can both determine if there is a path between two given nodes? -> Try a few pairs
+    # (b) + (c)
     pairs = [('A', 'F'), ('D', 'F')]
     for (u, v) in pairs:
-        print_dfs = dfs_path(g, u, v) # returns a path or none
-        print_bfs = bfs_path(g, u, v) # reteurns the shortest path in number of edges, or none
-
-        # show the 2 paths found to compare
-        print(f"DFS path {u}->{v}:", print_dfs)
-        print(f"BFS path {u}->{v}:", print_bfs)
-
-        # (c) If a path exists, do DFS and BFS always find the same path?
-        same = (print_dfs is not None and print_bfs is not None and print_dfs == print_bfs)
+        p_dfs = dfs_path(g, u, v)
+        p_bfs = bfs_path(g, u, v)
+        print(f"DFS path {u}->{v}:", p_dfs)
+        print(f"BFS path {u}->{v}:", p_bfs)
+        same = (p_dfs is not None and p_bfs is not None and p_dfs == p_bfs)
         print(f"Same path? {same}")
+
+if __name__ == "__main__":
+    run()
